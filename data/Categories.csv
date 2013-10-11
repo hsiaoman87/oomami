@@ -1,0 +1,103 @@
+categoryId,decisionPath
+healthy-deli,Meal/Healthy
+healthy-hotpot,Meal/Healthy
+healthy-japanese,Meal/Healthy
+healthy-rawfood,Meal/Healthy
+healthy-salad,Meal/Healthy
+healthy-sandwiches,Meal/Healthy
+healthy-seafood,Meal/Healthy
+healthy-sushi,Meal/Healthy
+healthy-viet,Meal/Healthy
+carbs-adv-colombian,Meal/Not Healthy/Carbs/Adventurous
+carbs-adv-domin,Meal/Not Healthy/Carbs/Adventurous
+carbs-adv-latin,Meal/Not Healthy/Carbs/Adventurous
+carbs-adv-mex,Meal/Not Healthy/Carbs/Adventurous
+carbs-adv-pers,Meal/Not Healthy/Carbs/Adventurous
+carbs-adv-salv,Meal/Not Healthy/Carbs/Adventurous
+carbs-adv-soul,Meal/Not Healthy/Carbs/Adventurous
+carbs-adv-ven,Meal/Not Healthy/Carbs/Adventurous
+carbs-asian-fusion,Meal/Not Healthy/Carbs/Asian
+carbs-asian-cambo,Meal/Not Healthy/Carbs/Asian
+carbs-asian-canto,Meal/Not Healthy/Carbs/Asian
+carbs-asian-chinese,Meal/Not Healthy/Carbs/Asian
+carbs-asian-fil,Meal/Not Healthy/Carbs/Asian
+carbs-asian-indo,Meal/Not Healthy/Carbs/Asian
+carbs-asian-indpak,Meal/Not Healthy/Carbs/Asian
+carbs-asian-kor,Meal/Not Healthy/Carbs/Asian
+carbs-asian-lao,Meal/Not Healthy/Carbs/Asian
+carbs-asian-malay,Meal/Not Healthy/Carbs/Asian
+carbs-asian-paki,Meal/Not Healthy/Carbs/Asian
+carbs-asian-shang,Meal/Not Healthy/Carbs/Asian
+carbs-asian-sing,Meal/Not Healthy/Carbs/Asian
+carbs-asian-sze,Meal/Not Healthy/Carbs/Asian
+carbs-asian-taiwan,Meal/Not Healthy/Carbs/Asian
+carbs-asian-thai,Meal/Not Healthy/Carbs/Asian
+carbs-asian-viet,Meal/Not Healthy/Carbs/Asian
+carbs-west-ital,Meal/Not Healthy/Carbs/Asian
+carbs-west-pizza,Meal/Not Healthy/Carbs/Western
+carbs-west-soul,Meal/Not Healthy/Carbs/Western
+carbs-west-ukra,Meal/Not Healthy/Carbs/Western
+meat-adv-afgh,Meal/Not Healthy/Meat/Adventurous
+meat-adv-afr,Meal/Not Healthy/Meat/Adventurous
+meat-adv-arab,Meal/Not Healthy/Meat/Adventurous
+meat-adv-arg,Meal/Not Healthy/Meat/Adventurous
+meat-adv-bra,Meal/Not Healthy/Meat/Adventurous
+meat-adv-carib,Meal/Not Healthy/Meat/Adventurous
+meat-adv-colomb,Meal/Not Healthy/Meat/Adventurous
+meat-adv-cub,Meal/Not Healthy/Meat/Adventurous
+meat-adv-dom,Meal/Not Healthy/Meat/Adventurous
+meat-adv-halal,Meal/Not Healthy/Meat/Adventurous
+meat-adv-mex,Meal/Not Healthy/Meat/Adventurous
+meat-adv-moroc,Meal/Not Healthy/Meat/Adventurous
+meat-adv-peru,Meal/Not Healthy/Meat/Adventurous
+meat-adv-pr,Meal/Not Healthy/Meat/Adventurous
+meat-adv-salv,Meal/Not Healthy/Meat/Adventurous
+meat-adv-seneg,Meal/Not Healthy/Meat/Adventurous
+meat-adv-soul,Meal/Not Healthy/Meat/Adventurous
+meat-adv-turk,Meal/Not Healthy/Meat/Adventurous
+meat-adv-vene,Meal/Not Healthy/Meat/Adventurous
+meat-asian-bbq,Meal/Not Healthy/Meat/Asian
+meat-asian-fil,Meal/Not Healthy/Meat/Asian
+meat-asian-haw,Meal/Not Healthy/Meat/Asian
+meat-asian-hotpot,Meal/Not Healthy/Meat/Asian
+meat-asian-kor,Meal/Not Healthy/Meat/Asian
+meat-asian-mong,Meal/Not Healthy/Meat/Asian
+meat-west-burg,Meal/Not Healthy/Meat/Western
+meat-west-chsteak,Meal/Not Healthy/Meat/Western
+meat-west-germ,Meal/Not Healthy/Meat/Western
+meat-west-greek,Meal/Not Healthy/Meat/Western
+meat-west-hotdog,Meal/Not Healthy/Meat/Western
+meat-west-hung,Meal/Not Healthy/Meat/Western
+meat-west-newam,Meal/Not Healthy/Meat/Western
+meat-west-polish,Meal/Not Healthy/Meat/Western
+meat-west-russ,Meal/Not Healthy/Meat/Western
+meat-west-soul,Meal/Not Healthy/Meat/Western
+meat-west-texmex,Meal/Not Healthy/Meat/Western
+meat-west-tradam,Meal/Not Healthy/Meat/Western
+sea-adv-turk,Meal/Not Healthy/Seafood/Adventurous
+sea-asian-jap,Meal/Not Healthy/Seafood/Asian
+sea-asian-sushi,Meal/Not Healthy/Seafood/Asian
+sea-west-fishnc,Meal/Not Healthy/Seafood/Western
+sea-west-greek,Meal/Not Healthy/Seafood/Western
+sea-west-newam,Meal/Not Healthy/Seafood/Western
+sea-west-port,Meal/Not Healthy/Seafood/Western
+veg-asian-hotpot,Meal/Not Healthy/Veggies/Asian
+veg-asian-indpak,Meal/Not Healthy/Veggies/Asian
+veg-west-salad,Meal/Not Healthy/Veggies/Western
+snack-bagels,Snack
+snack-baker,Snack
+snack-cafe,Snack
+snack-csteak,Snack
+snack-wings,Snack
+snack-crepe,Snack
+snack-deli,Snack
+snack-dimsum,Snack
+snack-donuts,Snack
+snack-fondue,Snack
+snack-foodtruck,Snack
+snack-hotdog,Snack
+snack-juice,Snack
+snack-sandwich,Snack
+snack-soup,Snack
+snack-tapas,Snack
+snack-tea,Snack

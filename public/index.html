@@ -1,0 +1,389 @@
+<html> 
+<head> 
+<title>Oomami</title> 
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.0/jquery-ui.min.js"></script> 
+<script type="text/javascript" src="http://oauth.googlecode.com/svn/code/javascript/oauth.js"></script>
+<script type="text/javascript" src="http://oauth.googlecode.com/svn/code/javascript/sha1.js"></script>
+<script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1.debug.js"></script>
+<script type="text/javascript" src="js/prettyprint.js"></script>
+<script type="text/javascript" src="js/knockout.mapping-latest.debug.js"></script>
+    
+<script type="text/javascript" src="js/jquery.jsonp.js"></script>
+<script type="text/javascript">
+    var auth = { 
+        //
+        // Update with your auth tokens.
+        //
+        consumerKey: "7QCLJ8aDzFFnMZHe90fYTQ", 
+        consumerSecret: "7PJSoR-z3ekNt_f98sv32dgWdbU",
+        accessToken: "r7ijK7k3Z4HMgqJlc8mtDcwBhMcEkVcU",
+        accessTokenSecret: "FqajZ4p4DX3RAdf3D20J13lgFPY",
+        serviceProvider: {
+            signatureMethod: "HMAC-SHA1"
+        }
+    };
+    
+    // Initialize
+    if (!localStorage.getItem('location')) {
+        localStorage.setItem('location', 27617);
+    }
+    if (localStorage.getItem('useCurrentLocation') === null || typeof localStorage.getItem('useCurrentLocation') === 'undefined') {
+        localStorage.setItem('useCurrentLocation', true);
+    }
+    
+    function insertData (model, decisionPath, datum) {
+        if (model.name === decisionPath) {
+            model.categories.push(datum);
+        }
+        else {
+            var index = decisionPath.indexOf('/');
+            var path;
+            if (index === -1) {
+                path = decisionPath;
+            }
+            else {
+                path = decisionPath.substring(0, index);
+            }
+            var subModel = $.grep(model.groups, function (category) {
+                return category.name === path;
+            })[0];
+            if (!subModel) {
+                subModel = { name: path, categories: [], groups: [] };
+                model.groups.push(subModel);
+            }
+            insertData(subModel, decisionPath.substring(index + 1), datum)
+        }
+    }
+    
+    $(function () {
+        $.get('/data', function (data) {
+            var model = { name: 'Home', categories: [], groups: [] };
+            $.each(data, function (index, datum) {
+                insertData(model, datum.decisionPath, datum);
+            });
+            
+            ko.applyBindings(new AppModel(model));
+        });
+        
+        function Category(data, parent) {
+            var self = this;
+            
+            ko.mapping.fromJS(data, {}, self);
+            
+            $.each(self.images(), function (index, image) {
+                image.category = self;
+            });
+            
+            self.image = ko.computed(function () {
+                var index = Math.floor(Math.random() * self.images().length);
+                return self.images()[index].imageLocation();
+            });
+        }
+        function DataModel(data, parent) {
+            var self = this;
+            self.groups = ko.observableArray();
+            self.categories = ko.observableArray();
+            if (parent) {
+                self.path = parent.path + '/' + data.name;
+            }
+            else {
+                self.path = data.name;
+            }
+            ko.mapping.fromJS(data, {
+                groups: {
+                    create: function (options) {
+                        return new DataModel(options.data, self);
+                    }
+                },
+                categories: {
+                    create: function (options) {
+                        return new Category(options.data, self);
+                    }
+                }
+            }, self);
+            
+            self.categoryImages = ko.computed(function () {
+                var images = $.map(self.categories(), function (category) {
+                    return category.images();
+                });
+                images.sort(function (a, b) {
+                    return Math.random() - 0.5;
+                });
+                return images;
+            });
+        }
+        function AppModel(data) {
+            var self = this;
+            
+            self.data = new DataModel(data);
+            
+            self.canUseCurrentLocation = ko.observable(false);
+            self.useCurrentLocation = ko.observable(false);
+            self.useCurrentLocation.subscribe(function (useCurrentLocation) {
+                localStorage.setItem('useCurrentLocation', useCurrentLocation);
+                self.clear();
+            });
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    self.coords = position.coords;
+                    self.canUseCurrentLocation(true);
+                    self.useCurrentLocation(localStorage.getItem('useCurrentLocation'));
+                }, null, { enableHighAccuracy: true });
+            }
+            
+            self.sortOrder = ko.observable(0); // 0 = Best matched
+            self.searchRange = ko.observable(20);
+            self.searchRange.subscribe(function () {
+                self.clear();
+            });
+            self.searchRadiusInMeters = ko.computed(function () {
+                return self.searchRange() / 100 * 40000;
+            });
+            self.searchRadiusInMiles = ko.computed(function () {
+                return Math.round(self.searchRadiusInMeters() / 1609.34 * 10) / 10 + ' miles';
+            });
+            
+            self.path = ko.observableArray([self.data]);
+            
+            self.setPath = function (path) {
+                var index = self.path.indexOf(path) + 1;
+                if (self.path().length !== index) {
+                    self.path.splice(index);
+                }
+                self.clear();
+            }
+            
+            self.addPath = function (path) {
+                self.path.push(path);
+                self.clear();
+            }
+            
+            self.currentData = ko.computed(function () {
+                return self.path()[self.path().length - 1];
+            });
+            
+            self.near = ko.observable(localStorage.getItem('location'));
+            self.near.subscribe(function (value) {
+                localStorage.setItem('location', value);
+            });
+            
+            self.queryTokens = ko.observableArray();
+            self.categoryTokens = ko.observableArray();
+            
+            self.query = ko.computed(function () {
+                return self.queryTokens().join(' ');
+            });
+            self.categories = ko.computed(function () {
+                return self.categoryTokens().join(',');
+            });
+            
+            self.loading = ko.observable(false);
+            self.results = ko.observableArray();
+            
+            self.search = function (category) {
+                self.categoryTokens.removeAll();
+                $.each(category.yelpCategories(), function (index, category) {
+                    self.categoryTokens.push(category.yelpCategory());
+                });
+                self.submit()
+            }
+            
+            self.clear = function (showCategory) {
+                $('.results').empty();
+                $('.error').empty();
+                self.results.removeAll();
+                if (!showCategory) {
+                    self.categoryTokens.removeAll();
+                }
+            }
+            
+            self.submit = function () {
+                if (!this.categories() && !this.query()) {
+                    return;
+                }
+                
+                var accessor = {
+                    consumerSecret: auth.consumerSecret,
+                    tokenSecret: auth.accessTokenSecret
+                };
+                
+                parameters = [];
+                if (this.query()) {
+                    parameters.push(['term', this.query()]);
+                }
+                if (this.categories()) {
+                    parameters.push(['category_filter', this.categories()]);
+                }
+                if (this.useCurrentLocation()) {
+                    parameters.push(['ll', this.coords.latitude + ',' + this.coords.longitude]);
+                }
+                else {
+                    parameters.push(['location', this.near()]);
+                }
+                parameters.push(['radius_filter', this.searchRadiusInMeters()]);
+                parameters.push(['sort', +this.sortOrder()]);
+                
+                parameters.push(['callback', 'cb']);
+                parameters.push(['oauth_consumer_key', auth.consumerKey]);
+                parameters.push(['oauth_consumer_secret', auth.consumerSecret]);
+                parameters.push(['oauth_token', auth.accessToken]);
+                parameters.push(['oauth_signature_method', 'HMAC-SHA1']);
+                
+                var message = { 
+                    'action': 'http://api.yelp.com/v2/search',
+                    'method': 'GET',
+                    'parameters': parameters 
+                };
+                
+                OAuth.setTimestampAndNonce(message);
+                OAuth.SignatureMethod.sign(message, accessor);
+                
+                var parameterMap = OAuth.getParameterMap(message.parameters);
+                parameterMap.oauth_signature = OAuth.percentEncode(parameterMap.oauth_signature)
+                console.log(parameterMap);
+                
+                self.clear(true);
+                self.loading(true);
+                $.jsonp({
+                    url: message.action,
+                    data: parameterMap,
+                    callback: 'cb',
+                    cache: true,
+                    success: function (data, textStats, XMLHttpRequest) {
+                        console.log(data);
+                        $.each(data.businesses, function (index, item) {
+                            item.image_url = item.image_url || 'http://s3-media3.ak.yelpcdn.com/assets/2/www/img/305e17fe6ed8/gfx/blank_biz_medium_sq.png';
+                        });
+                        self.results(data.businesses);
+                        self.loading(false);
+                        var output = prettyPrint(data);
+                        //$('.results').html(output);
+                    },
+                    error: function (a, b, c) {
+                        $('.error').text('There was an error.  You may have entered an invalid category or exceeded the daily limit.');
+                    }
+                });
+                return;
+            };
+        }
+    });
+</script>
+<style>
+    *
+    {
+        box-sizing: border-box;
+        font-family: 'Open Sans', sans-serif;    
+    }
+    .error
+    {
+        color: red;
+    }
+    .image-wrapper
+    {
+        display: inline-block;
+        cursor: pointer;
+        padding: 5px;
+        margin: 5px;
+        border: 1px solid #ccc;
+    }
+    .image-wrapper:hover
+    {
+        border-color: #888;
+    }
+    .image-container
+    {
+        height: 200px;
+        width: 200px;
+        text-align: center;
+        overflow: hidden;
+    }
+    .category-image
+    {
+        height: 100%;
+    }
+    .search-radius
+    {
+        width: 300px;
+    }
+    .path-button
+    {
+        display: inline-block;
+    }
+    .path-button:after
+    {
+        content: '>';
+    }
+    .path-button:last-child:after
+    {
+        content: '';
+    }
+</style>
+<link type="text/css" rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.0/themes/base/jquery-ui.css">
+</head>
+<body>
+    <form data-bind="submit: submit">
+        <div>
+            <label data-bind="visible: canUseCurrentLocation"><input type="checkbox" data-bind="checked: useCurrentLocation" />Use current location</label>
+        </div>
+        <div data-bind="visible: !useCurrentLocation()">
+            <label>Location (zip code, city):<input type="text" data-bind="value: near, hasfocus: true" /></label>
+        </div>
+        <div>
+            <label>Sort by:</label>
+            <label><input type="radio" name="sort" value="0" data-bind="checked: sortOrder" />Best Matched</label>
+            <label><input type="radio" name="sort" value="1" data-bind="checked: sortOrder" />Distance</label>
+            <label><input type="radio" name="sort" value="2" data-bind="checked: sortOrder" />Highest Rated</label>
+        </div>
+        <div>
+            <label>Search radius:</label>
+            <input class="search-radius" type="range" data-bind="value: searchRange" />
+            <span data-bind="text: searchRadiusInMiles"></span>
+        </div>
+    </form>
+    <div data-bind="foreach: path">
+        <div class="path-button">
+            <button data-bind="text: name, click: $root.setPath"></button>
+        </div>
+    </div>
+    <!-- ko with: currentData -->
+    <div class="temp2">
+        <span style="vertical-align: top;" data-bind="visible: groups">Choose:</span>
+        <!-- ko foreach: groups -->
+        <button data-bind="text: name, click: $root.addPath"></button>
+        <!-- /ko -->
+    </div>
+    <div data-bind="foreach: categoryImages">
+        <div class="image-wrapper" data-bind="click: function (data, event) { $root.search($data.category); }">
+            <div class="image-container">
+                <img class="category-image" data-bind="attr: { src: '/images/' + imageLocation() }" />
+            </div>
+        </div>
+    </div>
+    <!-- /ko -->
+    <div data-bind="visible: categories">Categories:
+        <span class="query-param" data-bind="text: categories"></span>
+    </div>
+    <div class="error"></div>
+    <table data-bind="foreach: results">
+        <tr>
+            <td>
+                <img data-bind="attr: { src: image_url }" />
+            </td>
+            <td>
+                <a data-bind="attr: { href: url }, text: name" target="_blank"></a>
+                <img data-bind="attr: { src: rating_img_url }" style="vertical-align: middle" />
+                <span data-bind="text: '/' + review_count"></span>
+                <div data-bind="text: snippet_text"></div>
+            </td>
+        </tr>
+        <div data-bind="text: name"></div>
+    </table>
+    <div data-bind="visible: loading">Loading...</div>
+    <div data-bind="visible: !loading() && categories() && results().length === 0">No results</div>
+    <div class="results"></div>
+</body>
+</html>

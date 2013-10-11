@@ -1,0 +1,161 @@
+{
+    "ignoreCategories": null,
+    "questions": [
+        {
+            "id": "meal_size",
+            "question": "What size meal are you looking for?",
+            "answers": [
+                {
+                    "display": "Snack",
+                    "query": "snack",
+                    "categories": "cafes cheesesteaks chicken_wings dimsum creperies delis hotdogs fondue food_court foodstands hotdog sandwiches soup tapas tapasmallplates bagels bakeries coffee donuts foodtrucks gelato icecream juicebars streetvendor tea"
+                },
+                {
+                    "display": "Meal",
+                    "query": "food",
+                    "categories": null
+                }
+            ],
+            "multiselect": false
+        },
+        {
+            "id": "healthiness",
+            "question": "Healthy or Unhealthy?",
+            "answers": [
+                {
+                    "display": "Healthy",
+                    "query": "healthy",
+                    "categories": "delis gluten_free hotpot japanese raw_food salad sandwiches seafood sushi vegan vegetarian vietnamese juicebars"
+                },
+                {
+                    "display": "Unhealthy",
+                    "query": "unhealthy",
+                    "categories": "burgers cheesesteaks chicken_wings comfortfood cuban diners hotdogs fishnchips fondue food_court foodstands gastropubs halal hotdog mexican pizza soulfood southern tex-mex donuts desserts"
+                },
+                {
+                    "display": "No preference",
+                    "query": null,
+                    "categories": null
+                }
+            ],
+            "multiselect": false
+        },
+        {
+            "id": "temperature",
+            "question": "Hot or Cold?",
+            "answers": [
+                {
+                    "display": "Hot",
+                    "query": "hot",
+                    "categories": "comfortfood fondue hotpot soup coffee "
+                },
+                {
+                    "display": "Cold",
+                    "query": "cold",
+                    "categories": "raw_food salad sushi gelato icecream juicebars"
+                }
+            ],
+            "multiselect": false
+        },
+        {
+            "id": "appetype",
+            "question": "Choose your appetype:",
+            "answers": [
+                {
+                    "display": "Herbivore",
+                    "query": null,
+                    "categories": "vegetarian vegan chinese cantonese shanghainese hotpot mediterranean egyptian lebanese salad taiwanese vietnamese juicebars"
+                },
+                {
+                    "display": "Carnivore",
+                    "query": null,
+                    "categories": "afghani senegalese arabian argentine austrian bbq brazilian burgers cheesesteaks chicken_wings cuban hotdogs filipino french german halal hotdog hotpot korean mexican mideastern mongolian moroccan pakistani persian peruvian polish portuguese russian scandinavian soulfood southern spanish steak taiwanese tex-mex turkish vietnamese"
+                },
+                {
+                    "display": "Carbivore",
+                    "query": "pasta noodles rice",
+                    "categories": "argentine asianfusion cambodian chinese cantonese shanghainese szechuan italian korean malaysian mexican persian pizza singaporean soulfood taiwanese thai ukrainian vietnamese bakeries",
+                    "hint": "You love carbs."
+                },
+                {
+                    "display": "Piscivore",
+                    "query": null,
+                    "categories": "fishnchips japanese raw_food portuguese scandinavian seafood sushi"
+                },
+                {
+                    "display": "Omnivore",
+                    "query": null,
+                    "categories": null,
+                    "hint": "I will eat anything."
+                }
+            ],
+            "multiselect": false
+        },
+        {
+            "id": "flavor",
+            "question": "Choose a flavor:",
+            "answers": [
+                {
+                    "display": "Sweet n Sour",
+                    "query": null,
+                    "categories": "asianfusion cambodian caribbean chinese shanghainese filipino hawaiian laotian malaysian soulfood taiwanese thai vietnamese"
+                },
+                {
+                    "display": "Spiceful",
+                    "query": null,
+                    "categories": "afghani african senegalese arabian bangladeshi burmese cajun cambodian chinese szechuan ethiopian halal himalayan indpak indonesian korean laotian colombian malaysian mideastern egyptian lebanese mongolian moroccan pakistani persian peruvian thai ",
+                    "hint": "i.e. curry"
+                },
+                {
+                    "display": "Spicy",
+                    "query": null,
+                    "categories": "asianfusion cajun chinese szechuan ethiopian indpak korean laotian malaysian mexican mideastern mongolian pakistani soulfood thai",
+                    "hint": "i.e. hot peppers"
+                },
+                {
+                    "display": "Light n Fresh",
+                    "query": null,
+                    "categories": "japanese raw_food salad sushi vietnamese"
+                },
+                {
+                    "display": "Umami/Hearty/Rich",
+                    "query": null,
+                    "categories": "argentine asianfusion bbq brazilian burgers cheesesteaks chicken_wings cuban fishnchips fondue french gastropubs halal hotdog hungarian indpak italian polish portuguese russian soulfood southern steak tex-mex ukrainian"
+                }
+            ],
+            "multiselect": true
+        },
+        {
+            "id": "region",
+            "question": "Choose a region:",
+            "answers": [
+                {
+                    "display": "Asian",
+                    "query": "asian",
+                    "categories": "asianfusion bangladeshi bbq burmese cambodian chinese cantonese dimsum shanghainese szechuan filipino hawaiian himalayan hotpot indpak indonesian japanese korean laotian malaysian mongolian pakistani singaporean sushi taiwanese thai vietnamese "
+                },
+                {
+                    "display": "Western",
+                    "query": "western",
+                    "categories": "newamerican tradamerican australian austrian belgian brasseries british burgers cajun cheesesteaks creperies czechslovakian diners fishnchips fondue french gastropubs german greek hungarian iberian irish italian mediterranean modern_european pizza polish portuguese russian salad scandinavian scottish soulfood southern spanish tex-mex ukrainian bagels donuts "
+                },
+                {
+                    "display": "South American",
+                    "query": "south american",
+                    "categories": "argentine basque brazilian dominican cuban latin colombian salvadoran venezuelan mexican peruvian "
+                },
+                {
+                    "display": "Middle Eastern/African",
+                    "query": "middle eastern african",
+                    "categories": "afghani african senegalese southafrican arabian haitian ethiopian halal mideastern egyptian lebanese moroccan persian turkish"
+                },
+                {
+                    "display": "Caribbean",
+                    "query": "caribbean",
+                    "categories": "cajun caribbean puertorican trinidadian soulfood"
+                }
+            ],
+            "multiselect": false
+        }
+    ]
+}

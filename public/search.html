@@ -1,0 +1,554 @@
+<html> 
+<head> 
+<title>Oomami</title> 
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.0/jquery-ui.min.js"></script> 
+<script type="text/javascript" src="http://oauth.googlecode.com/svn/code/javascript/oauth.js"></script>
+<script type="text/javascript" src="http://oauth.googlecode.com/svn/code/javascript/sha1.js"></script>
+<script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1.debug.js"></script>
+<script type="text/javascript" src="js/prettyprint.js"></script>
+<script type="text/javascript" src="js/knockout.mapping-latest.debug.js"></script>
+    
+<script type="text/javascript" src="js/jquery.jsonp.js"></script>
+<script type="text/javascript">
+    var auth = { 
+        //
+        // Update with your auth tokens.
+        //
+        consumerKey: "7QCLJ8aDzFFnMZHe90fYTQ", 
+        consumerSecret: "7PJSoR-z3ekNt_f98sv32dgWdbU",
+        accessToken: "r7ijK7k3Z4HMgqJlc8mtDcwBhMcEkVcU",
+        accessTokenSecret: "FqajZ4p4DX3RAdf3D20J13lgFPY",
+        serviceProvider: { 
+            signatureMethod: "HMAC-SHA1"
+        }
+    };
+    
+    // Initialize
+    if (!localStorage.getItem('zip-code')) {
+        localStorage.setItem('zip-code', 27617);
+    }
+    if (!localStorage.getItem('question-data')) {
+        var data = {
+            ignoreCategories: 'vegetarian salad',
+            questions: [{
+                id: 'meal_size',
+                question: 'What size meal are you looking for?',
+                answers: [{
+                    display: 'Snack',
+                    query: 'snack'
+                },
+                {
+                    display: 'Meal',
+                    query: 'food'
+                },
+                {
+                    display: 'Dessert',
+                    query: 'dessert',
+                    omit: ['healthiness', 'appetype', 'flavor']
+                }]
+            },
+            {
+                id: 'healthiness',
+                question: 'Healthy or Unhealthy?',
+                answers: [{
+                    display: 'Healthy',
+                    query: 'healthy'
+                },
+                {
+                    display: 'Unhealthy',
+                    query: 'unhealthy'
+                },
+                {
+                    display: 'No preference'
+                }]
+            },
+            {
+                id: 'temperature',
+                question: 'Hot or Cold?',
+                answers: [{
+                    display: 'Hot',
+                    query: 'hot'
+                },
+                {
+                    display: 'Cold',
+                    query: 'cold'
+                }]
+            },
+            {
+                id: 'appetype',
+                question: 'Choose your appetype:',
+                answers: [{
+                    display: 'Herbivore',
+                    categories: 'vegetarian vegan'
+                },
+                {
+                    display: 'Carnivore',
+                    categories: 'bbq steak burgers'
+                },
+                {
+                    display: 'Carbivore',
+                    hint: 'You love carbs.',
+                    query: 'pasta noodles rice',
+                    categories: 'italian'
+                },
+                {
+                    display: 'Piscivore',
+                    categories: 'seafood sushi raw_food fishnchips'
+                },
+                {
+                    display: 'Omnivore',
+                    hint: 'I will eat anything.'
+                }]
+            },
+            {
+                id: 'flavor',
+                question: 'Choose a flavor:',
+                multiselect: true,
+                answers: [{
+                    display: 'Sweet n Sour',
+                    categories: 'chinese korean vietnamese thai asianfusion'
+                },
+                {
+                    display: 'Spiceful',
+                    hint: 'i.e. curry',
+                    categories: 'indpak chinese cajun mideastern'
+                },
+                {
+                    display: 'Spicy',
+                    hint: 'i.e. hot peppers',
+                    categories: 'chinese mexican korean indpak'
+                },
+                {
+                    display: 'Light n Fresh',
+                    categories: 'salad sushi seafood'
+                },
+                {
+                    display: 'Umami/Hearty/Rich',
+                    categories: 'french burgers fondue'
+                }]
+            },
+            {
+                id: 'region',
+                question: 'Choose a region:',
+                answers: [{
+                    display: 'Asian',
+                    query: 'asian'
+                },
+                {
+                    display: 'Western',
+                    query: 'western'
+                },
+                {
+                    display: 'South American',
+                    query: 'south american'
+                },
+                {
+                    display: 'Middle Eastern/African',
+                    query: 'middle eastern african'
+                },
+                {
+                    display: 'Caribbean',
+                    query: 'caribbean'
+                }]
+            }]
+        };
+        localStorage.setItem('question-data', JSON.stringify(data));
+    }
+    
+    $(function () {
+        ko.bindingHandlers.attrIf = {
+            update: function (element, valueAccessor, allBindingsAccessor) {
+                var h = ko.utils.unwrapObservable(valueAccessor());
+                var show = ko.utils.unwrapObservable(h._if);
+                if (show) {
+                    ko.bindingHandlers.attr.update(element, valueAccessor, allBindingsAccessor);
+                } else {
+                    for (var k in h) {
+                        if (h.hasOwnProperty(k) && k.indexOf("_") !== 0) {
+                            $(element).removeAttr(k);
+                        }
+                    }
+                }
+            }
+        };
+
+        function AppModel(data) {
+            var self = this;
+            
+            var mappings = {
+                questions: {
+                    create: function (options) {
+                        return new QuestionModel(options.data);
+                    }
+                }
+            };
+            
+            self.data = ko.mapping.fromJS($.extend({
+                ignoreCategories: null
+            }, data), mappings);
+            self.questions = self.data.questions;
+            
+            self.near = ko.observable(localStorage.getItem('zip-code'));
+            self.near.subscribe(function (value) {
+                localStorage.setItem('zip-code', value);
+            });
+            
+            self.queryTokens = ko.observableArray();
+            self.categoryTokens = ko.observableArray();
+            
+            self.query = ko.computed(function () {
+                return self.queryTokens().join(' ');
+            });
+            self.categories = ko.computed(function () {
+                return self.categoryTokens().join(',');
+            });
+            
+            self.results = ko.observableArray();
+            
+            self.addQuestion = function () {
+                self.questions.push(new QuestionModel());
+            };
+            
+            self.removeQuestion = function (question) {
+                self.questions.remove(question);
+                self.refresh();
+            };
+            
+            self.saveData = function (a, b, c) {
+                var mapping = {
+                    ignore: ['selections']
+                };
+                localStorage.setItem('question-data', ko.toJSON(ko.mapping.toJS(self.data, mapping)));
+                location.reload();
+            };
+            
+            self.resetData = function () {
+                if (confirm('Are you sure?  This is a factory reset.')) {
+                    localStorage.removeItem('question-data');
+                    location.reload();
+                }
+            };
+            
+            self.exportData = function () {
+                var mapping = {
+                    ignore: ['selections']
+                };
+                $('.exported-data').val(ko.toJSON(ko.mapping.toJS(self.data, mapping), null, 4));
+                $('#export-dialog').dialog('open');
+            }
+            
+            self.importData = function () {
+                $('#import-dialog').dialog('open');
+            }
+            
+            self.refresh = function (item, e) {
+                var queryTokens = [];
+                var categoryTokensMap;
+                $.each(self.questions(), function (index, item) {
+					if (categoryTokensMap) {
+						var newCategoryTokensMap;
+						$.each(item.selections(), function (index, item) {
+							if (item) {
+								if (item.query()) {
+									queryTokens = queryTokens.concat(item.query().split(/[\s, ]+/));
+								}
+								if (item.categories()) {
+									newCategoryTokensMap = newCategoryTokensMap || {};
+									$.each(item.categories().split(/[\s, ]+/), function (index, item) {
+										if (categoryTokensMap[item]) {
+											newCategoryTokensMap[item] = 1;
+										}
+									});
+								}
+							}
+						});
+						if (newCategoryTokensMap) {
+							categoryTokensMap = newCategoryTokensMap;
+						}
+					}
+					else {
+						var newCategoryTokensMap = {};
+						$.each(item.selections(), function (index, item) {
+							if (item) {
+								if (item.query()) {
+									queryTokens = queryTokens.concat(item.query().split(/[\s, ]+/));
+								}
+								if (item.categories()) {
+									$.each(item.categories().split(/[\s, ]+/), function (index, item) {
+										newCategoryTokensMap[item] = 1;
+									});
+								}
+							}
+						});
+						if (Object.keys(newCategoryTokensMap).length) {
+							categoryTokensMap = newCategoryTokensMap;
+						}
+					}
+                });
+				
+				if (!categoryTokensMap) {
+					categoryTokensMap = {};
+				}
+                
+                var ignoreCategories = (self.data.ignoreCategories() || '').split(/[\s, ]+/);
+				$.each(ignoreCategories, function (index, item) {
+					delete categoryTokensMap[item];
+				});
+				
+				var categoryTokens = [];
+				$.each(Object.keys(categoryTokensMap), function (index, item) {
+					categoryTokens.push(item);
+				});
+				
+                self.queryTokens(queryTokens);
+                self.categoryTokens(categoryTokens);
+                
+                return true;
+            };
+            
+            self.submit = function (a, b, c) {
+                
+                var accessor = {
+                    consumerSecret: auth.consumerSecret,
+                    tokenSecret: auth.accessTokenSecret
+                };
+                
+                parameters = [];
+                if (this.query()) {
+                    parameters.push(['term', this.query()]);
+                }
+                if (this.categories()) {
+                    parameters.push(['category_filter', this.categories()]);
+                }
+                parameters.push(['location', this.near()]);
+                parameters.push(['callback', 'cb']);
+                parameters.push(['oauth_consumer_key', auth.consumerKey]);
+                parameters.push(['oauth_consumer_secret', auth.consumerSecret]);
+                parameters.push(['oauth_token', auth.accessToken]);
+                parameters.push(['oauth_signature_method', 'HMAC-SHA1']);
+                
+                var message = { 
+                    'action': 'http://api.yelp.com/v2/search',
+                    'method': 'GET',
+                    'parameters': parameters 
+                };
+                
+                OAuth.setTimestampAndNonce(message);
+                OAuth.SignatureMethod.sign(message, accessor);
+                
+                var parameterMap = OAuth.getParameterMap(message.parameters);
+                parameterMap.oauth_signature = OAuth.percentEncode(parameterMap.oauth_signature)
+                console.log(parameterMap);
+                
+                $('.results').empty();
+                $('.error').empty();
+                self.results.removeAll();
+                
+                $.jsonp({
+                    url: message.action,
+                    data: parameterMap,
+                    callback: 'cb',
+                    cache: true,
+                    success: function (data, textStats, XMLHttpRequest) {
+                        console.log(data);
+                        $.each(data.businesses, function (index, item) {
+                            item.image_url = item.image_url || 'http://s3-media3.ak.yelpcdn.com/assets/2/www/img/305e17fe6ed8/gfx/blank_biz_medium_sq.png';
+                        });
+                        self.results(data.businesses);
+                        var output = prettyPrint(data);
+                        $('.results').html(output);
+                    },
+                    error: function (a, b, c) {
+                        $('.error').text('There was an error.  You may have entered an invalid category or exceeded the daily limit.');
+                    }
+                });
+                return;
+            };
+        }
+        
+        function QuestionModel(data) {
+            var self = this;
+            
+            var mappings = {
+                answers: {
+                    create: function (options) {
+                        return new AnswerModel(options.data);
+                    }
+                }
+            };
+            
+            ko.mapping.fromJS($.extend({
+                id: null,
+                question: null,
+                answers: [],
+                selections: [],
+                multiselect: false
+            }, data), mappings, self);
+            
+            self.addAnswer = function () {
+                self.answers.push(new AnswerModel());
+            };
+            
+            self.removeAnswer = function (answer) {
+                self.answers.remove(answer);
+                self.selections.remove(answer);
+                this.refresh();
+            }
+        }
+        
+        function AnswerModel(data) {
+            ko.mapping.fromJS($.extend({
+                display: null,
+                query: null,
+                categories: null
+            }, data), {}, this);
+        }
+        
+        ko.applyBindings(new AppModel(JSON.parse(localStorage.getItem('question-data'))));
+        
+        $('#import-dialog').dialog({
+            autoOpen: false,
+            modal: true,
+            height: 400,
+            width: 800,
+            title: 'Import',
+            buttons: [{
+                text: 'Import',
+                click: function () {
+                    try {
+                        var data = JSON.parse($('.imported-data').val());
+                        localStorage.setItem('question-data', JSON.stringify(data));
+                        location.reload();
+                    }
+                    catch (e) {
+                        alert(e);
+                    }
+                }
+            }]
+        });
+        $('#export-dialog').dialog({
+            autoOpen: false,
+            modal: true,
+            height: 400,
+            width: 800,
+            title: 'Export'
+        });
+    });
+</script>
+<style>
+    *
+    {
+        box-sizing: border-box;
+        font-family: 'Open Sans', sans-serif;    
+    }
+    .choose
+    {
+        width: 50%;
+    }
+    .choose select
+    {
+        vertical-align: top;
+    }
+    .edit
+    {
+        width: 50%;
+        float: right;
+    }
+    .error
+    {
+        color: red;
+    }
+    .ui-widget .imported-data, .ui-widget .exported-data
+    {
+        height: 100%;
+        width: 100%;
+        font-family: monospace;
+    }
+	.query-param
+	{
+		word-wrap: break-word;
+	}
+</style>
+<link type="text/css" rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.0/themes/base/jquery-ui.css">
+</head>
+<body>
+    <div id="import-dialog">
+        <div>
+            <textarea class="imported-data"></textarea>
+        </div>
+    </div>
+    <div id="export-dialog">
+        <div>
+            <textarea class="exported-data" readonly="readonly"></textarea>
+        </div>
+    </div>
+    <div class="edit">
+        <!-- ko foreach: questions -->
+        <div>
+            <label data-bind="attr: { for: id }">Question:</label>
+            <input type="text" data-bind="value: question, attr: { id: id }, valueUpdate: 'afterkeydown'" placeholder="Enter a question"></input>
+            <input type="text" data-bind="value: id" placeholder="Enter an id"></input>
+            <label>Multiselect:<input type="checkbox" data-bind="checked: multiselect"></input></label>
+            <button data-bind="click: $parent.removeQuestion">Delete this question</button>
+            <div data-bind="foreach: answers">
+                <div>
+                    <label>Answer:</label>
+                    <input type="text" data-bind="value: display, valueUpdate: 'afterkeydown'" placeholder="Display"></input>
+                    <input type="text" data-bind="value: query, valueUpdate: 'afterkeydown', event: { keyup: $root.refresh }" placeholder="Query"></input>
+                    <input type="text" data-bind="value: categories, valueUpdate: 'afterkeydown', event: { keyup: $root.refresh }" placeholder="Category"></input>
+                    <button data-bind="click: $parent.removeAnswer.bind($root)">Delete this answer</button>
+                </div>
+            </div>
+            <button data-bind="click: addAnswer">Add an answer</button>
+        </div>
+        <!-- /ko -->
+        <br />
+        <button data-bind="click: addQuestion">Add a question</button>
+        <button data-bind="click: saveData">Save All</button>
+        <button data-bind="click: resetData">Reset</button>
+        <button data-bind="click: importData">Import</button>
+        <button data-bind="click: exportData">Export</button>
+    </div>
+    <div class="choose">
+        <form data-bind="submit: submit">
+            <div>
+                <label>Zip code:<input type="text" data-bind="value: near, hasfocus: true" /></label>
+            </div>
+            <!-- ko with: data -->
+            <div>
+                <label>Categories I don't like:<input type="text" data-bind="value: ignoreCategories, event: { change: $root.refresh }" /></label>
+            </div>
+            <!-- /ko -->
+            <!-- ko foreach: questions -->
+            <select data-bind="options: answers, optionsText: 'display', selectedOptions: selections, optionsCaption: question, event: { change: $root.refresh }, attrIf: { multiple: true, _if: $data.multiselect }"></select>
+            <!-- /ko -->
+            <button data-bind="enable: categories()" type="submit">Go</button>
+        </form>
+        <div data-bind="visible: query">Query:
+            <span class="query-param" data-bind="text: query"></span>
+        </div>
+        <div data-bind="visible: categories">Categories:
+            <span class="query-param" data-bind="text: categories"></span>
+        </div>
+        <div class="error"></div>
+        <table data-bind="foreach: results">
+            <tr>
+                <td>
+                    <img data-bind="attr: { src: image_url }" />
+                </td>
+                <td>
+                    <a data-bind="attr: { href: url }, text: name" target="_blank"></a>
+                    <img data-bind="attr: { src: rating_img_url }" style="vertical-align: middle" />
+                    <span data-bind="text: '/' + review_count"></span>
+                    <div data-bind="text: snippet_text"></div>
+                </td>
+            </tr>
+            <div data-bind="text: name"></div>
+        </table>
+    </div>
+    <div class="results"></div>
+</body>
+</html>
